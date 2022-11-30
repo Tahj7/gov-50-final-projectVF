@@ -9,8 +9,11 @@ output:
 
 
 
-## Project thoughts
+## Project thoughts - Milestone 1
 
 I am interested in exploring the relationship between crime and football in New Orleans by examining crime rates during the football season. I hypothesize that as the New Orleans Saints win, the crime rate for that week is lower than the crime rate for the weeks that they lose games. I will explore this data by collecting data on Saints wins from a given year(or a couple of years) as the independent variable and data on the number of crimes called in in a given week that the Saints played. 
 
+## Milestone 2
+
+What is the relationship between crime and the success of the New Orleans Saints football team? I hypothesize that for the weeks that the Saints win, there are fewer reported crimes in the New Orleans area and when the Saints don't win in a given week, there are more crimes reported. This is because the citizens of New Orleans have a personal attachment ot the New Orleans Saints, and emotions are impacted in a negative or positive way depending on the outcome of the game, thus leading some to exhbit criminal behavior based on these emotions. the Independent(or explanatory) variable in this experiment is a Saints win or a loss, that is measured by the points they score compared to the team that they play. Essentially, I may have to code this variable to be binary in order to make it easier, but if I don't, I will have to write code that identifies if the Saints score is higher than their opponents. The dependent variable is the number of crimes reported for the week following the loss. I will collect the total number of crimes(ranging from propetty crimes to more serious crimes like homicide) and compare them across weeks. I need to firther examine the data in order to find a pattern, but it would seem to be the case that the data would support my hypothesis. The main issue I come across are confounding variables, which can be infinite. Examples include job layoffs, education levels, income levels, etc. 
 
