@@ -2,7 +2,8 @@
 title: "Gov 50 Final Project"
 author: "Tahj Johnson"
 description: "My Final Project"
-output:
+output: 
+
   distill::distill_article:
     self_contained: false
 ---
@@ -22,7 +23,8 @@ Crimes <- read_csv("Crimes_-_2019.csv")
 ```
 
 ## Data
- This is a cross-sectional study that observes the relationship between crime type and arrests made. It is more of a descriptive study as opposed to causal. Before going into the code, the independent variables of Assault and Motor Vehicle Theft were measured by simple coding, where the individual crimes for each were filtered and counted for the given year in 2019. The dependent variable of arrests was measured a bit differently. Arrests were original coded as "TRUE" or "FALSE", but this was for the entirety of the dataset. Thus, I created the "asarr" column to count the arrests or nonarrests for assaults. I then created the "mvtarr" to count the arrests or nonarrests for the motor vehicle thefts. 
+
+This is a cross-sectional study that observes the relationship between crime type and arrests made. It is more of a descriptive study as opposed to causal. Before going into the code, the independent variables of Assault and Motor Vehicle Theft were measured by simple coding, where the individual crimes for each were filtered and counted for the given year in 2019. The dependent variable of arrests was measured a bit differently. Arrests were original coded as "TRUE" or "FALSE", but this was for the entirety of the dataset. Thus, I created the "asarr" column to count the arrests or nonarrests for assaults. I then created the "mvtarr" to count the arrests or nonarrests for the motor vehicle thefts. 
 ```{r}
 library(dplyr)
 library(tidyverse)
@@ -43,13 +45,13 @@ Crimes
 The goal of creating this specific table was to delineate each individual type of crime that existed within the "Primary Type" column. This, then, allowed me to count the number of crimes that existed under each crime type as well as the number of arrests/non-arrests that occured under each crime type. This was essential to the next portion of the project, where I selected two specific crimes of interest (Assault and Motor Vehicle Theft). 
 
 ```{r}
-Types <- Types|> 
+Crimes <- Crimes |> 
   mutate(Assault = if_else(`Primary Type` ==  "ASSAULT", "Assault", "Other"))
-Types
+Crimes
 
-Types <- Types|> 
+Crimes <- Crimes |> 
   mutate(`MVT` = if_else(`Primary Type` == "MOTOR VEHICLE THEFT", "Mvt", "No-Mvt" ))
-Types
+Crimes
 
 
 
@@ -58,22 +60,22 @@ Types
 In this section, I created a column of each specif crime type that I am interested in examining. Specifically, the "Assault" and "MVT" columns that I mutated seperately corresponds to whether the crime committed was one that was an Assault of Motor Vehicle Theft. This was essential to me setting up my graph, where I could only plot column names and not individual variables. Therefore, this column was needed in order to set up my x-axis variables for the bar graph plotted further below. 
 
 ```{r}
-Types <- Types |> 
+Crimes <- Crimes |> 
   group_by(Assault) |> 
   mutate(asarr = if_else(Arrest == TRUE, "Arrest", "No Arrest"))
-Types
+Crimes
 
-Types <- Types |> 
+Crimes <- Crimes |> 
   group_by(MVT) |> 
   mutate(mvtarr = if_else(Arrest == TRUE, "Arrest", "No Arrest"))
-Types
+Crimes
 
-CountA <- Types |> 
+CountA <- Crimes |> 
   group_by(Assault) |> 
   count(asarr)
 CountA
 
-CountM <- Types |> 
+CountM <- Crimes |> 
   group_by(MVT) |> 
   count(mvtarr)
 CountM
@@ -105,7 +107,7 @@ In this graph, the x-axis shows if an arrest was made for each respective crime 
 
 ```{r}
 
-avg_mvtarr <- Types |> 
+avg_mvtarr <- Crimes |> 
   group_by(MVT) |>
   filter(MVT == "Mvt") |>
   summarize(mvtarr_mean = mean(mvtarr == "Arrest")) |> 
@@ -114,7 +116,7 @@ avg_mvtarr
 
 
 
-avg_asarr <- Types |> 
+avg_asarr <- Crimes |> 
   group_by(Assault) |>
   filter(Assault == "Assault") |>
   summarize(asarr_mean = mean(asarr == "Arrest")) |> 
@@ -129,17 +131,17 @@ avg_asarr
 This data shows that for Motor Vehicle Theft crimes (Mvt), there are 5% of total cases that lead to arrests. the No-Mvt delineates overall crimes that were not motor vehicle thefts. Secondly, the data for Assault shows that 18% of assault crimes have led to arrests. This goes to show that, on average, there is a greater likelihood of arrests for crimes of assault as opposed to crimes of motor vehicle theft. This accounts for differences in the numeric population of each crime type total, thus minimizing a confounding factor of the difference in total number of crimes in each crime sector, Assault and Motor Vehicle Theft. This data will be important to compare to the regression data in order to determine which one may be more causal than the other. 
 
 ```{r}
-Types <- Types |> 
+Crimes <- Crimes |> 
   mutate(SectionAWards = if_else(Ward >= 25, "Section A", "Section B"))
-Types
+Crimes
 
-Types <- Types |> 
+Crimes <- Crimes |> 
   mutate(SectionBWards = if_else(Ward <=24, "Section B", "Section A"))
-Types
+Crimes
 ```
 
 ```{r}
-multrr<- lm(Arrest ~ SectionAWards + Assault + MVT,  data = Types)
+multrr<- lm(Arrest ~ SectionAWards + Assault + MVT,  data = Crimes)
 multrr
 
 

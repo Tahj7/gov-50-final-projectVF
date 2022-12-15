@@ -115,7 +115,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--/radix_placeholder_rmarkdown_metadata-->
   
   <script type="text/json" id="radix-resource-manifest">
-  {"type":"character","attributes":{},"value":["index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/header-attrs-2.17/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js"]}
+  {"type":"character","attributes":{},"value":["Calls_for_Service_2019.csv","Crimes_-_2019.csv","index_files/anchor-4.2.2/anchor.min.js","index_files/bowser-1.9.3/bowser.min.js","index_files/distill-2.2.21/template.v2.js","index_files/figure-html5/unnamed-chunk-5-1.png","index_files/figure-html5/unnamed-chunk-5-2.png","index_files/header-attrs-2.16/header-attrs.js","index_files/header-attrs-2.17/header-attrs.js","index_files/jquery-3.6.0/jquery-3.6.0.js","index_files/jquery-3.6.0/jquery-3.6.0.min.js","index_files/jquery-3.6.0/jquery-3.6.0.min.map","index_files/kePrint-0.0.1/kePrint.js","index_files/lightable-0.0.1/lightable.css","index_files/popper-2.6.0/popper.min.js","index_files/tippy-6.2.7/tippy-bundle.umd.min.js","index_files/tippy-6.2.7/tippy-light-border.css","index_files/tippy-6.2.7/tippy.css","index_files/tippy-6.2.7/tippy.umd.min.js","index_files/webcomponents-2.0.0/webcomponents.js","spreadspoke_scores.csv"]}
   </script>
   <!--radix_placeholder_navigation_in_header-->
   <!--/radix_placeholder_navigation_in_header-->
@@ -1473,6 +1473,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
   <!--/radix_placeholder_distill-->
   <script src="index_files/header-attrs-2.16/header-attrs.js"></script>
+  <script src="index_files/kePrint-0.0.1/kePrint.js"></script>
+  <link href="index_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
   <script src="index_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
   <script src="index_files/popper-2.6.0/popper.min.js"></script>
   <link href="index_files/tippy-6.2.7/tippy.css" rel="stylesheet" />
@@ -1517,9 +1519,553 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 </div>
 
 <div class="d-article">
-<h2 id="project-thoughts">Project thoughts</h2>
-<p>I am interested in exploring the relationship between crime and football in New Orleans by examining crime rates during the football season. I hypothesize that as the New Orleans Saints win, the crime rate for that week is lower than the crime rate for the weeks that they lose games. I will explore this data by collecting data on Saints wins from a given year(or a couple of years) as the independent variable and data on the number of crimes called in in a given week that the Saints played.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
+<h2 id="introduction">Introduction</h2>
+<p>What is the relationship between the probability of arrests and the type of crime(Assault and Motor Vehicle Theft) committed in Chicago? By exploring a dataset that includes the types of crime committed in Chicago in addition to if an arrest was made or not , I can test for a relationship between crime type and and the probability of arrest. I narrow the crime type down to Assault and Motor Vehicle Theft for two reasons. First, they both included a large number to sample from, with 0ver 10,000 crimes committed for each. Secondly, I wanted to explore a relationship between two different types of crime. Assault is more of a srious crime that results in injury and incur longer sentences, whereas MVT is less extreme. I was curious to see if this different in the type of crime in regards to their degree made any difference. I hypothesize that petty crimes such as Motor Vehicle theft are are more likely to have arrests than crimes such assault, where the given the length of the investigation and uncertainty that comes with it require longer processes. If it is true that petty crimesare more likely to lead to arrests, then it is important to examine why exactly it is the case that more arrests are made on petty crimes and the investigative process for it.One potential confounding variable is the ward that the person who was arrested lives in. It can be the case that in one specific district, more arrests for a certain crime are likely to be committed. One limitation to this study is that it only examines one year. This is due ot data gathering constraints, but a future study that examines this pattern over an interval of years would be better at determining causality.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='http://dirk.eddelbuettel.com/code/anytime.html'>anytime</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='fu'><a href='https://readr.tidyverse.org/reference/read_delim.html'>read_csv</a></span><span class='op'>(</span><span class='st'>"Crimes_-_2019.csv"</span><span class='op'>)</span></span></code></pre>
+</div>
+</div>
+<h2 id="data">Data</h2>
+This is a cross-sectional study that observes the relationship between crime type and arrests made. It is more of a descriptive study as opposed to causal. Before going into the code, the independent variables of Assault and Motor Vehicle Theft were measured by simple coding, where the individual crimes for each were filtered and counted for the given year in 2019. The dependent variable of arrests was measured a bit differently. Arrests were original coded as “TRUE” or “FALSE”, but this was for the entirety of the dataset. Thus, I created the “asarr” column to count the arrests or nonarrests for assaults. I then created the “mvtarr” to count the arrests or nonarrests for the motor vehicle thefts.
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://dplyr.tidyverse.org'>dplyr</a></span><span class='op'>)</span></span>
+<span><span class='kw'><a href='https://rdrr.io/r/base/library.html'>library</a></span><span class='op'>(</span><span class='va'><a href='https://tidyverse.tidyverse.org'>tidyverse</a></span><span class='op'>)</span></span>
+<span></span>
+<span><span class='fu'><a href='https://rdrr.io/r/base/subset.html'>subset</a></span><span class='op'>(</span><span class='va'>Crimes</span>, select <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Primary Type"</span><span class='op'>)</span><span class='op'>)</span> </span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 1
+   `Primary Type`    
+   &lt;chr&gt;             
+ 1 DECEPTIVE PRACTICE
+ 2 THEFT             
+ 3 THEFT             
+ 4 CRIMINAL DAMAGE   
+ 5 ASSAULT           
+ 6 THEFT             
+ 7 BATTERY           
+ 8 CRIMINAL DAMAGE   
+ 9 BATTERY           
+10 OTHER OFFENSE     
+# … with 261,148 more rows</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>`Primary Type`</span>, <span class='va'>Arrest</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 59 × 3
+   `Primary Type`                    Arrest     n
+   &lt;chr&gt;                             &lt;lgl&gt;  &lt;int&gt;
+ 1 ARSON                             FALSE    333
+ 2 ARSON                             TRUE      43
+ 3 ASSAULT                           FALSE  16876
+ 4 ASSAULT                           TRUE    3743
+ 5 BATTERY                           FALSE  39106
+ 6 BATTERY                           TRUE   10405
+ 7 BURGLARY                          FALSE   9094
+ 8 BURGLARY                          TRUE     545
+ 9 CONCEALED CARRY LICENSE VIOLATION FALSE      5
+10 CONCEALED CARRY LICENSE VIOLATION TRUE     212
+# … with 49 more rows</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 22
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 13 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, and abbreviated variable names ¹​`Case Number`,
+#   ²​`Primary Type`, ³​Description, ⁴​`Location Description`</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'><a href='https://magrittr.tidyverse.org/reference/pipe.html'>%&gt;%</a></span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>Ward</span><span class='op'>)</span></span></code></pre>
+</div>
+<pre><code># A tibble: 51 × 2
+    Ward     n
+   &lt;dbl&gt; &lt;int&gt;
+ 1     1  4817
+ 2     2  5273
+ 3     3  7405
+ 4     4  6975
+ 5     5  5923
+ 6     6  9771
+ 7     7  7548
+ 8     8  8158
+ 9     9  7887
+10    10  3737
+# … with 41 more rows</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 22
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 13 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, and abbreviated variable names ¹​`Case Number`,
+#   ²​`Primary Type`, ³​Description, ⁴​`Location Description`</code></pre>
+</div>
+<p>The goal of creating this specific table was to delineate each individual type of crime that existed within the “Primary Type” column. This, then, allowed me to count the number of crimes that existed under each crime type as well as the number of arrests/non-arrests that occured under each crime type. This was essential to the next portion of the project, where I selected two specific crimes of interest (Assault and Motor Vehicle Theft).</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>Assault <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>`Primary Type`</span> <span class='op'>==</span>  <span class='st'>"ASSAULT"</span>, <span class='st'>"Assault"</span>, <span class='st'>"Other"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 23
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 14 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, and abbreviated variable names
+#   ¹​`Case Number`, ²​`Primary Type`, ³​Description,
+#   ⁴​`Location Description`</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>`MVT` <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>`Primary Type`</span> <span class='op'>==</span> <span class='st'>"MOTOR VEHICLE THEFT"</span>, <span class='st'>"Mvt"</span>, <span class='st'>"No-Mvt"</span> <span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 24
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 15 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, MVT &lt;chr&gt;, and abbreviated
+#   variable names ¹​`Case Number`, ²​`Primary Type`, ³​Description,
+#   ⁴​`Location Description`</code></pre>
+</div>
+<p>In this section, I created a column of each specif crime type that I am interested in examining. Specifically, the “Assault” and “MVT” columns that I mutated seperately corresponds to whether the crime committed was one that was an Assault of Motor Vehicle Theft. This was essential to me setting up my graph, where I could only plot column names and not individual variables. Therefore, this column was needed in order to set up my x-axis variables for the bar graph plotted further below.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>Assault</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>asarr <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Arrest</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"Arrest"</span>, <span class='st'>"No Arrest"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 25
+# Groups:   Assault [2]
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 16 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, MVT &lt;chr&gt;, asarr &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Case Number`, ²​`Primary Type`,
+#   ³​Description, ⁴​`Location Description`</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>MVT</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>mvtarr <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Arrest</span> <span class='op'>==</span> <span class='cn'>TRUE</span>, <span class='st'>"Arrest"</span>, <span class='st'>"No Arrest"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 26
+# Groups:   MVT [2]
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 17 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, MVT &lt;chr&gt;, asarr &lt;chr&gt;,
+#   mvtarr &lt;chr&gt;, and abbreviated variable names ¹​`Case Number`,
+#   ²​`Primary Type`, ³​Description, ⁴​`Location Description`</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountA</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>Assault</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>asarr</span><span class='op'>)</span></span>
+<span><span class='va'>CountA</span></span></code></pre>
+</div>
+<pre><code># A tibble: 4 × 3
+# Groups:   Assault [2]
+  Assault asarr          n
+  &lt;chr&gt;   &lt;chr&gt;      &lt;int&gt;
+1 Assault Arrest      3743
+2 Assault No Arrest  16876
+3 Other   Arrest     52432
+4 Other   No Arrest 188107</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountM</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>MVT</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/count.html'>count</a></span><span class='op'>(</span><span class='va'>mvtarr</span><span class='op'>)</span></span>
+<span><span class='va'>CountM</span></span></code></pre>
+</div>
+<pre><code># A tibble: 4 × 3
+# Groups:   MVT [2]
+  MVT    mvtarr         n
+  &lt;chr&gt;  &lt;chr&gt;      &lt;int&gt;
+1 Mvt    Arrest       520
+2 Mvt    No Arrest   8457
+3 No-Mvt Arrest     55655
+4 No-Mvt No Arrest 196526</code></pre>
+</div>
+<p>In this section, I created two new columns and two new tables. The first two columns are “asarr” and “mvtarr”. First, the “asarr” mutation/new column shows if an arrest was made for Assault crimes committed. If an arrest was made, the resulting variable that shows in the row is “Arrest” and “No Arrest” if an arrest wasnt made. Following that, I did the same thing for mvtarr, but grouped by the MVT variable in order to extract the Arrests/No Arrests for MVT. This was essential in order to get data on the number of arrests and non-arrests made for each spepcifc instance of an Assault and MVT crime. Therefor, creating these two new column, then allowed me to create two new tables that corresponded to the number of arrests and non arrests that existed under each specific crime of assault or motor vehicle theft. The count for Assault is labeled “Count A” and the Count for MVT is labeled “Count M.”</p>
+<h2 id="results">Results</h2>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountA</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>mapping <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>asarr</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"identity"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Assault"</span>, y <span class='op'>=</span> <span class='st'>"Number of Arrests/NonArrests"</span>, title <span class='op'>=</span> <span class='st'>"Assault and Arrests"</span><span class='op'>)</span></span></code></pre>
+</div>
+<img src="index_files/figure-html5/unnamed-chunk-5-1.png" width="624" />
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountA</span></span></code></pre>
+</div>
+<pre><code># A tibble: 4 × 3
+# Groups:   Assault [2]
+  Assault asarr          n
+  &lt;chr&gt;   &lt;chr&gt;      &lt;int&gt;
+1 Assault Arrest      3743
+2 Assault No Arrest  16876
+3 Other   Arrest     52432
+4 Other   No Arrest 188107</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountM</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a></span><span class='op'>(</span>mapping <span class='op'>=</span> <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/aes.html'>aes</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='va'>mvtarr</span>, y <span class='op'>=</span> <span class='va'>n</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span>  <span class='fu'><a href='https://ggplot2.tidyverse.org/reference/geom_bar.html'>geom_bar</a></span><span class='op'>(</span>stat <span class='op'>=</span> <span class='st'>"identity"</span><span class='op'>)</span> <span class='op'>+</span></span>
+<span><span class='fu'><a href='https://ggplot2.tidyverse.org/reference/labs.html'>labs</a></span><span class='op'>(</span>x <span class='op'>=</span> <span class='st'>"Motor Vehicle Theft"</span>, y <span class='op'>=</span> <span class='st'>"Number of Arrests/NonArrests"</span>, title <span class='op'>=</span> <span class='st'>"MVT and Arrests"</span><span class='op'>)</span></span></code></pre>
+</div>
+<img src="index_files/figure-html5/unnamed-chunk-5-2.png" width="624" />
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>CountM</span></span></code></pre>
+</div>
+<pre><code># A tibble: 4 × 3
+# Groups:   MVT [2]
+  MVT    mvtarr         n
+  &lt;chr&gt;  &lt;chr&gt;      &lt;int&gt;
+1 Mvt    Arrest       520
+2 Mvt    No Arrest   8457
+3 No-Mvt Arrest     55655
+4 No-Mvt No Arrest 196526</code></pre>
+</div>
+<p>In this graph, the x-axis shows if an arrest was made for each respective crime that I examine. The y-axis shows the total number of arrests or non arrests made. This bar plot was done for each crime type, Assault and Motor Vehicle Theft. The graph, then shows that for both variables, there were more Non-Arrests made than there were arrests. What is important to find out, however, is the ratio or average in which there is Non-Arrests to Arrests in order to determine which crime leads to a greater likelihood of arrests.</p>
+<h1 id="milestone-4--results">Milestone 4- Results</h1>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>avg_mvtarr</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>MVT</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>MVT</span> <span class='op'>==</span> <span class='st'>"Mvt"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>mvtarr_mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>mvtarr</span> <span class='op'>==</span> <span class='st'>"Arrest"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'>knitr</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>col.names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"MVT"</span>, <span class='st'>"Arrest Average"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>avg_mvtarr</span></span></code></pre>
+</div>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">MVT</th>
+<th style="text-align: right;">Arrest Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mvt</td>
+<td style="text-align: right;">0.0579258</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>avg_asarr</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/group_by.html'>group_by</a></span><span class='op'>(</span><span class='va'>Assault</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/filter.html'>filter</a></span><span class='op'>(</span><span class='va'>Assault</span> <span class='op'>==</span> <span class='st'>"Assault"</span><span class='op'>)</span> <span class='op'>|&gt;</span></span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarize</a></span><span class='op'>(</span>asarr_mean <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/mean.html'>mean</a></span><span class='op'>(</span><span class='va'>asarr</span> <span class='op'>==</span> <span class='st'>"Arrest"</span><span class='op'>)</span><span class='op'>)</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'>knitr</span><span class='fu'>::</span><span class='fu'><a href='https://rdrr.io/pkg/knitr/man/kable.html'>kable</a></span><span class='op'>(</span>col.names <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Assault"</span>, <span class='st'>"Arrest Average"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>avg_asarr</span></span></code></pre>
+</div>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Assault</th>
+<th style="text-align: right;">Arrest Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Assault</td>
+<td style="text-align: right;">0.1815316</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This data shows that for Motor Vehicle Theft crimes (Mvt), there are 5% of total cases that lead to arrests. the No-Mvt delineates overall crimes that were not motor vehicle thefts. Secondly, the data for Assault shows that 18% of assault crimes have led to arrests. This goes to show that, on average, there is a greater likelihood of arrests for crimes of assault as opposed to crimes of motor vehicle theft. This accounts for differences in the numeric population of each crime type total, thus minimizing a confounding factor of the difference in total number of crimes in each crime sector, Assault and Motor Vehicle Theft. This data will be important to compare to the regression data in order to determine which one may be more causal than the other.</p>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>SectionAWards <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Ward</span> <span class='op'>&gt;=</span> <span class='fl'>25</span>, <span class='st'>"Section A"</span>, <span class='st'>"Section B"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 27
+# Groups:   MVT [2]
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 18 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, MVT &lt;chr&gt;, asarr &lt;chr&gt;,
+#   mvtarr &lt;chr&gt;, SectionAWards &lt;chr&gt;, and abbreviated variable names
+#   ¹​`Case Number`, ²​`Primary Type`, ³​Description, …</code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>Crimes</span> <span class='op'>&lt;-</span> <span class='va'>Crimes</span> <span class='op'>|&gt;</span> </span>
+<span>  <span class='fu'><a href='https://dplyr.tidyverse.org/reference/mutate.html'>mutate</a></span><span class='op'>(</span>SectionBWards <span class='op'>=</span> <span class='fu'><a href='https://dplyr.tidyverse.org/reference/if_else.html'>if_else</a></span><span class='op'>(</span><span class='va'>Ward</span> <span class='op'>&lt;=</span><span class='fl'>24</span>, <span class='st'>"Section B"</span>, <span class='st'>"Section A"</span><span class='op'>)</span><span class='op'>)</span></span>
+<span><span class='va'>Crimes</span></span></code></pre>
+</div>
+<pre><code># A tibble: 261,158 × 28
+# Groups:   MVT [2]
+         ID Case Nu…¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest
+      &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;lgl&gt; 
+ 1 11864018 JC476123  09/2… 022X… 1154  DECEPT… FINANC… COMMER… FALSE 
+ 2 11859805 JC471592  10/1… 024X… 0860  THEFT   RETAIL… GROCER… FALSE 
+ 3 11863808 JC476236  10/0… 0000… 0810  THEFT   OVER $… RESIDE… FALSE 
+ 4 11859727 JC471542  10/1… 016X… 1320  CRIMIN… TO VEH… STREET  FALSE 
+ 5 11859656 JC471240  10/1… 051X… 0560  ASSAULT SIMPLE  GAS ST… FALSE 
+ 6 11859827 JC471571  10/1… 011X… 0860  THEFT   RETAIL… APPLIA… TRUE  
+ 7 11859127 JC470662  10/1… 064X… 0486  BATTERY DOMEST… APARTM… FALSE 
+ 8 11859142 JC470769  10/1… 070X… 1310  CRIMIN… TO PRO… RESIDE… FALSE 
+ 9 11859444 JC470982  10/1… 065X… 0486  BATTERY DOMEST… APARTM… FALSE 
+10 11864222 JC476645  08/0… 051X… 2826  OTHER … HARASS… RESIDE… FALSE 
+# … with 261,148 more rows, 19 more variables: Domestic &lt;lgl&gt;,
+#   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;,
+#   `FBI Code` &lt;chr&gt;, `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;,
+#   Year &lt;dbl&gt;, `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;,
+#   Location &lt;chr&gt;, Assault &lt;chr&gt;, MVT &lt;chr&gt;, asarr &lt;chr&gt;,
+#   mvtarr &lt;chr&gt;, SectionAWards &lt;chr&gt;, SectionBWards &lt;chr&gt;, and
+#   abbreviated variable names ¹​`Case Number`, ²​`Primary Type`, …</code></pre>
+</div>
+<div class="layout-chunk" data-layout="l-body">
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='va'>multrr</span><span class='op'>&lt;-</span> <span class='fu'><a href='https://rdrr.io/r/stats/lm.html'>lm</a></span><span class='op'>(</span><span class='va'>Arrest</span> <span class='op'>~</span> <span class='va'>SectionAWards</span> <span class='op'>+</span> <span class='va'>Assault</span> <span class='op'>+</span> <span class='va'>MVT</span>,  data <span class='op'>=</span> <span class='va'>Crimes</span><span class='op'>)</span></span>
+<span><span class='va'>multrr</span></span></code></pre>
+</div>
+<pre><code>
+Call:
+lm(formula = Arrest ~ SectionAWards + Assault + MVT, data = Crimes)
+
+Coefficients:
+           (Intercept)  SectionAWardsSection B  
+             -0.003013                0.030646  
+          AssaultOther               MVTNo-Mvt  
+              0.044733                0.166377  </code></pre>
+<div class="sourceCode">
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class='fu'>modelsummary</span><span class='fu'>::</span><span class='fu'><a href='https://vincentarelbundock.github.io/modelsummary/reference/modelsummary.html'>modelsummary</a></span><span class='op'>(</span><span class='va'>multrr</span>,</span>
+<span>statistic <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"s.e. = {std.error}"</span>,</span>
+<span><span class='st'>"p = {p.value}"</span><span class='op'>)</span>,</span>
+<span>gof_map <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"nobs"</span>, <span class='st'>"r.squared"</span>, <span class='st'>"adj.r.squared"</span><span class='op'>)</span><span class='op'>)</span></span></code></pre>
+</div>
+<table class="table" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:center;">
+Model 1
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:center;">
+−0.003
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+s.e. = 0.005
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+p = 0.572
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SectionAWardsSection B
+</td>
+<td style="text-align:center;">
+0.031
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+s.e. = 0.002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+p = &lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AssaultOther
+</td>
+<td style="text-align:center;">
+0.045
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+s.e. = 0.003
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+p = &lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MVTNo-Mvt
+</td>
+<td style="text-align:center;">
+0.166
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+</td>
+<td style="text-align:center;">
+s.e. = 0.004
+</td>
+</tr>
+<tr>
+<td style="text-align:left;box-shadow: 0px 1px">
+</td>
+<td style="text-align:center;box-shadow: 0px 1px">
+p = &lt;0.001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Num.Obs.
+</td>
+<td style="text-align:center;">
+261143
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+R2
+</td>
+<td style="text-align:center;">
+0.007
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+R2 Adj.
+</td>
+<td style="text-align:center;">
+0.007
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>What these results show is that for every 1 unit increase in a crime happening in either Section A or Section B wards, there is a 3 percent increase in the arrest probability for a given crime holding all else equal. Secondly, for every 1 unit increase in an assault that occurs, there is a 4 percent increase in the likelihood of an arrest been made for an assault crime holding all else equal. Thirdly, for every 1 unit increase in a MVT crime that occurs, there is a 16% increase in the chances for arrest holding all else equal. Once comparing this data to the data above on the averages, we can see that the two results do no match each other. The key statistic here is that the MVT shows greater likelihood of arrests as opposed to the assault. More discussion will be done in the conclusion section on which data to believe more. Also, important to note is that there is evidence of a confounding factor being the Ward that a crime happens in. The results show that in Wards that are either numbered 25 and above and 25 and below, there is a 3 percent increase in the likelihood of an arrest happening on average. This shows that arrests may happen more times than others due to the ward the crime occurs in. In regards to statistical significance, it is hard to determine in this study given its design. However, I do argue that the knitted tables above that measures the averages are more statistically significant because they do not include “Other” crimes. THis regression does. More is talked about that in the conclusion.</p>
+<p>The p-values are not as applicable in this study given its design and lack of treatments/control groups. The similar thing applies for the confidence intervals.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The resutls of this study is, at first glance, contradictory. The knitted table that measured the averages of the arrests for each crime shows that Assault crimes have a 18% arrest rate as opposed to a 5% rate for MVT crimes. However, the linear regression table showed 4% for assault crimes and 16% for MVT. However, it is mainly true that Assault crimes lead to more arrests given the affect of confounding variables in the linear regression. Namely, and this is one limitation of the linear regression model, the linear regression for Assault and MVT included “Other” crimes as well that were not assaults or MVTs due to the multitude of crime types as opposed to only the two studied. Therefore, the original if_else had to account for the other ~20 crimes, that was then featured in the regression. The averages found, however, controls for this because it is filted to only either assault or mvt crimes. Therefore, my hypothesis is supported that more petty crimes lead to higher arres rates when compared to more extreme ones such as assault. However, there are some limitations. First, as previously mentioned, the regression accounted for “Other” variables. Secondly, one must account for confounding factors, such as Ward. There can be many other confounding factors that lead to arrests, such as race, income, and education level as well. Thirdly, it is difficult to interpret the results as causal without confidence intervals, which was not specificaly needed for this study, but could have helped a bit. IOn the future, my analysis can be improved if my dataset only had two crime types as opposed to many. Additionally, if it factored in data from multiple years as opposed to one, my project could have been improved and could have made a stronger case for its results.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r distill-force-highlighting-css"><code class="sourceCode r"></code></pre></div>
 <!--radix_placeholder_article_footer-->
 <!--/radix_placeholder_article_footer-->
 </div>
