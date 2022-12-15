@@ -9,11 +9,157 @@ output:
 
 
 
-## Project thoughts - Milestone 1
+## Introduction
 
-I am interested in exploring the relationship between crime and football in New Orleans by examining crime rates during the football season. I hypothesize that as the New Orleans Saints win, the crime rate for that week is lower than the crime rate for the weeks that they lose games. I will explore this data by collecting data on Saints wins from a given year(or a couple of years) as the independent variable and data on the number of crimes called in in a given week that the Saints played. 
+What is the relationship between the probability of arrests and the type of crime(Assault and Motor Vehicle Theft) committed in Chicago? By exploring a dataset that includes the types of crime committed in Chicago in addition to if an  arrest was made or not , I can test for a relationship between crime type and and the probability of arrest. I narrow the crime type down to Assault and Motor Vehicle Theft for two reasons. First, they both included a large number to sample from, with 0ver 10,000 crimes committed for each. Secondly, I wanted to explore a relationship between two different types of crime. Assault is more of a srious crime that results in injury and incur longer sentences, whereas MVT is less extreme. I was curious to see if this different in the type of crime in regards to their degree made any difference.   I hypothesize that petty crimes such as Motor Vehicle theft are are more likely to have arrests than crimes such assault, where the given the length of the investigation and uncertainty that comes with it require longer processes. If it is true that petty crimesare more likely to lead to arrests, then it is important to examine why exactly it is the case that more arrests are made on petty crimes and the investigative process for it.One potential confounding variable is the ward that the person who was arrested lives in. It can be the case that in one specific district, more arrests for a certain crime are likely to be committed. One limitation to this study is that it only examines one year. This is due ot data gathering constraints, but a future study that examines this pattern over an interval of years would be better at determining causality. 
 
-## Milestone 2
+```{r}
+library(tidyverse)
+library(dplyr)
+library(anytime)
 
-What is the relationship between crime and the success of the New Orleans Saints football team? I hypothesize that for the weeks that the Saints win, there are fewer reported crimes in the New Orleans area and when the Saints don't win in a given week, there are more crimes reported. This is because the citizens of New Orleans have a personal attachment ot the New Orleans Saints, and emotions are impacted in a negative or positive way depending on the outcome of the game, thus leading some to exhbit criminal behavior based on these emotions. the Independent(or explanatory) variable in this experiment is a Saints win or a loss, that is measured by the points they score compared to the team that they play. Essentially, I may have to code this variable to be binary in order to make it easier, but if I don't, I will have to write code that identifies if the Saints score is higher than their opponents. The dependent variable is the number of crimes reported for the week following the loss. I will collect the total number of crimes(ranging from propetty crimes to more serious crimes like homicide) and compare them across weeks. I need to firther examine the data in order to find a pattern, but it would seem to be the case that the data would support my hypothesis. The main issue I come across are confounding variables, which can be infinite. Examples include job layoffs, education levels, income levels, etc. 
+Crimes <- read_csv("Crimes_-_2019.csv")
+```
+
+## Data
+ This is a cross-sectional study that observes the relationship between crime type and arrests made. It is more of a descriptive study as opposed to causal. Before going into the code, the independent variables of Assault and Motor Vehicle Theft were measured by simple coding, where the individual crimes for each were filtered and counted for the given year in 2019. The dependent variable of arrests was measured a bit differently. Arrests were original coded as "TRUE" or "FALSE", but this was for the entirety of the dataset. Thus, I created the "asarr" column to count the arrests or nonarrests for assaults. I then created the "mvtarr" to count the arrests or nonarrests for the motor vehicle thefts. 
+```{r}
+library(dplyr)
+library(tidyverse)
+
+subset(Crimes, select = c("Primary Type")) 
+
+Crimes %>% 
+  count(`Primary Type`, Arrest)
+Crimes
+
+Crimes %>%
+  count(Ward)
+Crimes
+
+
+```
+
+The goal of creating this specific table was to delineate each individual type of crime that existed within the "Primary Type" column. This, then, allowed me to count the number of crimes that existed under each crime type as well as the number of arrests/non-arrests that occured under each crime type. This was essential to the next portion of the project, where I selected two specific crimes of interest (Assault and Motor Vehicle Theft). 
+
+```{r}
+Types <- Types|> 
+  mutate(Assault = if_else(`Primary Type` ==  "ASSAULT", "Assault", "Other"))
+Types
+
+Types <- Types|> 
+  mutate(`MVT` = if_else(`Primary Type` == "MOTOR VEHICLE THEFT", "Mvt", "No-Mvt" ))
+Types
+
+
+
+```
+
+In this section, I created a column of each specif crime type that I am interested in examining. Specifically, the "Assault" and "MVT" columns that I mutated seperately corresponds to whether the crime committed was one that was an Assault of Motor Vehicle Theft. This was essential to me setting up my graph, where I could only plot column names and not individual variables. Therefore, this column was needed in order to set up my x-axis variables for the bar graph plotted further below. 
+
+```{r}
+Types <- Types |> 
+  group_by(Assault) |> 
+  mutate(asarr = if_else(Arrest == TRUE, "Arrest", "No Arrest"))
+Types
+
+Types <- Types |> 
+  group_by(MVT) |> 
+  mutate(mvtarr = if_else(Arrest == TRUE, "Arrest", "No Arrest"))
+Types
+
+CountA <- Types |> 
+  group_by(Assault) |> 
+  count(asarr)
+CountA
+
+CountM <- Types |> 
+  group_by(MVT) |> 
+  count(mvtarr)
+CountM
+
+```
+In this section, I created two new columns and two new tables. The first two columns are "asarr" and "mvtarr". First, the "asarr" mutation/new column  shows if an arrest was made for Assault crimes committed. If an arrest was made, the resulting variable that shows in the row is "Arrest" and "No Arrest" if an arrest wasnt made. Following that, I did the same thing for mvtarr, but grouped by the MVT variable in order to extract the Arrests/No Arrests for MVT. This was essential in order to get data on the number of arrests and non-arrests  made for each spepcifc instance of an Assault and MVT crime. Therefor, creating these two new column, then allowed me to create two new tables that corresponded to the number of arrests and non arrests that existed under each specific crime of assault or motor vehicle theft. The count for Assault is labeled "Count A" and the Count for MVT is labeled "Count M." 
+
+## Results
+
+```{r}
+CountA |>
+  ggplot(mapping = aes(x = asarr, y = n)) +
+  geom_bar(stat = "identity") +
+labs(x = "Assault", y = "Number of Arrests/NonArrests", title = "Assault and Arrests")
+CountA
+
+
+CountM |> 
+  ggplot(mapping = aes(x = mvtarr, y = n)) +
+  geom_bar(stat = "identity") +
+labs(x = "Motor Vehicle Theft", y = "Number of Arrests/NonArrests", title = "MVT and Arrests")
+CountM
+
+  
+```
+In this graph, the x-axis shows if an arrest was made for each respective crime that I examine. The y-axis shows the total number of arrests or non arrests made. This bar plot was done for each crime type, Assault and Motor Vehicle Theft. The graph, then shows that for both variables, there were more Non-Arrests made than there were arrests. What is important to find out, however, is the ratio or average in which there is Non-Arrests to Arrests in order to determine which crime leads to a greater likelihood of arrests. 
+
+# Milestone 4- Results
+
+```{r}
+
+avg_mvtarr <- Types |> 
+  group_by(MVT) |>
+  filter(MVT == "Mvt") |>
+  summarize(mvtarr_mean = mean(mvtarr == "Arrest")) |> 
+  knitr::kable(col.names = c("MVT", "Arrest Average"))
+avg_mvtarr
+
+
+
+avg_asarr <- Types |> 
+  group_by(Assault) |>
+  filter(Assault == "Assault") |>
+  summarize(asarr_mean = mean(asarr == "Arrest")) |> 
+  knitr::kable(col.names = c("Assault", "Arrest Average"))
+avg_asarr
+
+
+
+
+```
+
+This data shows that for Motor Vehicle Theft crimes (Mvt), there are 5% of total cases that lead to arrests. the No-Mvt delineates overall crimes that were not motor vehicle thefts. Secondly, the data for Assault shows that 18% of assault crimes have led to arrests. This goes to show that, on average, there is a greater likelihood of arrests for crimes of assault as opposed to crimes of motor vehicle theft. This accounts for differences in the numeric population of each crime type total, thus minimizing a confounding factor of the difference in total number of crimes in each crime sector, Assault and Motor Vehicle Theft. This data will be important to compare to the regression data in order to determine which one may be more causal than the other. 
+
+```{r}
+Types <- Types |> 
+  mutate(SectionAWards = if_else(Ward >= 25, "Section A", "Section B"))
+Types
+
+Types <- Types |> 
+  mutate(SectionBWards = if_else(Ward <=24, "Section B", "Section A"))
+Types
+```
+
+```{r}
+multrr<- lm(Arrest ~ SectionAWards + Assault + MVT,  data = Types)
+multrr
+
+
+
+modelsummary::modelsummary(multrr,
+statistic = c("s.e. = {std.error}",
+"p = {p.value}"),
+gof_map = c("nobs", "r.squared", "adj.r.squared"))
+
+
+
+
+```
+
+What these results show is that for every 1 unit increase in a crime happening in either Section A or Section B wards, there is a 3 percent increase in the arrest probability for a given crime holding all else equal. Secondly, for every 1 unit increase in an assault that occurs, there is a 4 percent increase in the likelihood of an arrest been made for an assault crime holding all else equal. Thirdly, for every 1 unit increase in a MVT crime that occurs, there is a 16% increase in the chances for arrest holding all else equal. Once comparing this data to the data above on the averages, we can see that the two results do no match each other. The key statistic here is that the MVT shows greater likelihood of arrests as opposed to the assault. More discussion will be done in the conclusion section on which data to believe more. Also, important to note is that there is evidence of a confounding factor being the Ward that a crime happens in. The results show that in Wards that are either numbered 25 and above and 25 and below, there is a 3 percent increase in the likelihood of an arrest happening on average. This shows that arrests may happen more times than others due to the ward the crime occurs in. In regards to statistical significance, it is hard to determine in this study given its design. However, I do argue that the knitted tables above that measures the averages are more statistically significant because they do not include "Other" crimes. THis regression does. More is talked about that in the conclusion.
+
+
+The p-values are not as applicable in this study given its design and lack of treatments/control groups. The similar thing applies for the confidence intervals. 
+
+## Conclusion
+
+The resutls of this study is, at first glance, contradictory. The knitted table that measured the averages of the arrests for each crime shows that Assault crimes have a 18% arrest rate as opposed to a 5% rate for MVT crimes. However, the linear regression table showed 4% for assault crimes and 16% for MVT. However, it is mainly true that Assault crimes lead to more arrests given the affect of confounding variables in the linear regression. Namely, and this is one limitation of the linear regression model, the linear regression for Assault and MVT included "Other" crimes as well that were not assaults or MVTs due to the multitude of crime types as opposed to only the two studied. Therefore, the original if_else had to account for the other ~20 crimes, that was then featured in the regression. The averages found, however, controls for this because it is filted to only either assault or mvt crimes. Therefore, my hypothesis is supported that more petty crimes lead to higher arres rates when compared to more extreme ones such as assault. However, there are some limitations. First, as previously mentioned, the regression accounted for "Other" variables. Secondly, one must account for confounding factors, such as Ward. There can be many other confounding factors that lead to arrests, such as race, income, and education level as well. Thirdly, it is difficult to interpret the results as causal without confidence intervals, which was not specificaly needed for this study, but could have helped a bit. IOn the future, my analysis can be improved if my dataset only had two crime types as opposed to many. Additionally, if it factored in data from multiple years as opposed to one, my project could have been improved and could have made a stronger case for its results. 
 
